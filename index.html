@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="es">
+ <head>
+  <meta charset="UTF-8">
+  <title>Juego de Cartas</title>
+  <style>
+  
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+	  background-image: url("121.jpg");
+      animation: rotateAnimation 50s linear infinite;
+	  background-color: black;
+      background-position: top left;
+	  overflow: hidden;
+	  background-size: cover;
+    }
+
+    @keyframes rotateAnimation {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #start-button {
+	  position: relative;
+	  bottom: 8%;
+	  font-size: 150px;
+	  padding: 20px;
+	  background-color: black;
+	  color: white;
+	  border-radius: 50%;
+	  transition: transform 0.8s, box-shadow 0.3s;
+	  font-family: Georgia, sans-serif;
+	  cursor: pointer;
+	}
+	
+    #start-button:hover {
+	  transition: transform 2s, box-shadow 0.3s;
+	  border-radius: 5%;
+      transform: scale(0.1);
+	  text-decoration: underline;
+      box-shadow: 0 0 500px rgba(0, 0, 0, 0.9);
+    }	
+	
+    #exit-button {
+	  position: relative;
+	  bottom: -5px;
+      left: 5px;
+	  border: 3px groove white;
+	  background-color: green;
+	  color: white;
+	  font-size: 48px;
+	  transition: transform 0.8s, box-shadow 0.3s;
+      font-family: Georgia, sans-serif;
+	  text-decoration: underline;
+	  cursor: pointer;
+	}
+
+    #exit-button:hover {
+	  transition: transform 2s, box-shadow 0.3s;
+      transform: scale(6);
+      box-shadow: 0 0 10px rgba(0, 255, 127, 0.6);
+    }
+
+    .game {
+      text-align: center;
+    }
+
+    .cards-container {
+	  height: 100%;
+	  width: 100%;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .card {
+      width: 180px;
+      height: 250px;
+      margin: 5px;
+      perspective: 1000px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      transition: transform 0.6s;
+	  border: 1px solid #ccc;
+      border-radius: 5px; 
+	  cursor: pointer;
+    }
+	
+    .card:hover {
+      transform: scale(2);
+      box-shadow: 0 0 80px rgba(255, 255, 224, 0.9);
+    }
+
+    .front {
+	  line-height: 250px;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      backface-visibility: hidden;
+      font-size: 90px;
+      font-family: Georgia, sans-serif;
+      background-color: #f0f0f0;
+      border-radius: 5px;
+      cursor: pointer;
+      transform: rotateY(180deg);
+	  background-image: url("front.jpg");
+	  color: white;
+    }
+
+    .back {
+	  line-height: 250px;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      backface-visibility: hidden;
+      transform: rotateY(0deg);
+      background-color: #333;
+      border-radius: 5px;	  
+	  background-image: url("back.jpg");
+    }
+
+    .matched .front {
+      display: none;
+    }
+
+    .open .front {
+      transform: rotateY(0deg);
+    }
+
+    .open .back {
+      transform: rotateY(180deg);
+    }
+
+    .flipped {
+      animation: cardFlip 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .score-panel {
+      margin-bottom: 20px;
+	  font-family: Georgia, sans-serif;
+    }
+
+    span {
+      margin: 10px;
+      color: white;
+      font-size: 24px;
+      background-color: black;
+      padding: 8px 2px;
+      border-radius: 5px;
+      box-shadow: 0 0 6px rgba(255, 255, 255, 0.5);
+    }
+
+    #remaining-attempts {
+      cursor: pointer;
+	  display: inline-block;
+    }  
+   
+    #matches {
+      cursor: pointer;
+	  display: inline-block;
+    }    
+   
+    #timer {
+      cursor: pointer;
+	  display: inline-block;
+    }  
+ 
+    #remaining-attempts:hover {
+      transform: scale(2.5);
+    }  
+   
+    #matches:hover {
+      transform: scale(2.5);
+    }    
+   
+    #timer:hover {
+      transform: scale(2.5);
+    }  
+ 
+    @keyframes cardFlip {
+      0% {
+        transform: rotateY(180deg);
+      }
+      50% {
+        transform: rotateY(90deg);
+      }
+      100% {
+        transform: rotateY(0deg);
+      }
+    }  
+   
+    @keyframes showAnimation {
+      0% {
+        transform: translate(-50%, -50%) scale(0);
+      }
+      50% {
+        transform: translate(-50%, -50%) scale(1);
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+    }    
+   
+    #game-over-message,
+    #game-won-message {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      animation: showAnimation 10s ease forwards;
+	  font-family: STCaiyun;
+    }
+	
+  </style>
+ </head>
+
+ <body>
+  <div class="game" style="display: none;">
+    <div class="score-panel">
+      <span>INTENTOS RESTANTES: <span id="remaining-attempts">12</span></span>
+      <span>ACIERTOS: <span id="matches">0</span></span>
+      <span>Tiempo Restante: <span id="timer">60</span></span>
+    </div>
+	
+    <div class="cards-container" id="cards-container"></div>
+	
+	<p id="game-won-message" style="display: none; color: green; font-size: 550px;">GANADO</p>
+    <p id="game-over-message" style="display: none; color: red; font-size: 500px;">PERDIDO</p>
+    
+	<button id="exit-button" style="display: none;">SALIDA</button>
+  </div>
+  
+  <button id="start-button">ENTRADA</button>
+  
+  <audio id="snowSound" loop>
+    <source src="snow-sound.mp3" type="audio/mp3">
+  </audio>  
+  
+  <audio id="entradaSound">
+    <source src="entrada-sound.mp3" type="audio/mp3">
+  </audio>  
+  <audio id="salidaSound">
+    <source src="salida-sound.mp3" type="audio/mp3">
+  </audio>   
+  
+  <audio id="cardClickSound">
+    <source src="card-click-sound.mp3" type="audio/mp3">
+  </audio>
+  <audio id="casualidadSound">
+    <source src="casualidad-sound.mp3" type="audio/mp3">
+  </audio>
+  
+  <audio id="perdidaSound">
+    <source src="perdido-sound.mp3" type="audio/mp3">
+  </audio>
+  <audio id="suerteSound">
+    <source src="suerte-sound.mp3" type="audio/mp3">
+  </audio> 
+
+  <script>
+  
+    const gameContainer = document.querySelector('.game');
+    const startButton = document.getElementById('start-button');
+    const exitButton = document.getElementById('exit-button');
+    const remainingAttemptsDisplay = document.getElementById('remaining-attempts');
+    const gameOverMessage = document.getElementById('game-over-message');
+    let openedCards = [];
+    let matchedCards = [];
+    let attempts, matches, timer, canClick;
+
+    function startGame() {
+      clearInterval(timer);
+      attempts = 12;
+      matches = 0;
+      openedCards = [];
+      matchedCards = [];
+      remainingAttemptsDisplay.textContent = attempts;
+      document.getElementById('matches').textContent = matches;
+      gameOverMessage.style.display = 'none';
+	  canClick = true;
+
+      const cards = ['A', 'A', 'B', 'B', 'C', 'C', 'D', 'D', 'E', 'E', 'F', 'F'];
+      const shuffledCards = cards.sort(() => 0.5 - Math.random());
+
+      const cardsContainer = document.getElementById('cards-container');
+      cardsContainer.innerHTML = '';
+
+      shuffledCards.forEach(card => {
+        const div = document.createElement('div');
+        div.classList.add('card');
+        div.dataset.value = card;
+
+        const front = document.createElement('div');
+        front.classList.add('front');
+        front.textContent = card;
+
+        const back = document.createElement('div');
+        back.classList.add('back');
+
+        div.appendChild(front);
+        div.appendChild(back);
+        cardsContainer.appendChild(div);
+
+        div.addEventListener('click', cardClick);
+      });
+
+      document.body.style.backgroundImage = "url('120.jpg')";
+	  
+	  document.getElementById('game-won-message').style.display = 'none';
+	  document.getElementById('game-over-message').style.display = 'none';
+	  
+	  const snowSound = document.getElementById('snowSound');
+      snowSound.play();
+
+      startTimer();
+    }
+
+function cardClick() {
+  if (!canClick || this === openedCards[0]) return;
+
+  const clickedCard = this;
+  clickedCard.classList.add('open', 'flipped');
+
+  const cardClickSound = document.getElementById('cardClickSound');
+  cardClickSound.currentTime = 0;
+  cardClickSound.play();
+
+  if (openedCards.length === 0) {
+    openedCards.push(clickedCard);
+    clickedCard.querySelector('.back').style.display = 'none';
+    clickedCard.querySelector('.front').style.display = 'block';
+  } else if (openedCards.length === 1) {
+    openedCards.push(clickedCard);
+    clickedCard.querySelector('.back').style.display = 'none';
+    clickedCard.querySelector('.front').style.display = 'block';
+
+    const card1 = openedCards[0].dataset.value;
+    const card2 = openedCards[1].dataset.value;
+
+    attempts--;
+    remainingAttemptsDisplay.textContent = attempts;
+
+    canClick = false;
+
+    setTimeout(() => {
+      if (card1 === card2) {
+        openedCards.forEach(card => card.classList.add('matched'));
+        matchedCards.push(...openedCards);
+        openedCards = [];
+        matches++;
+        document.getElementById('matches').textContent = matches;
+        openedCards.forEach(card => card.classList.add('flipped'));
+
+        const casualidadSound = document.getElementById('casualidadSound');
+        casualidadSound.play();
+
+        checkGameWon();
+      } else {
+        openedCards.forEach(card => {
+          card.classList.remove('open');
+          card.querySelector('.back').style.display = 'block';
+          card.querySelector('.front').style.display = 'none';
+        });
+        openedCards = [];
+
+        clickedCard.classList.remove('open', 'flipped');
+        setTimeout(() => {
+          clickedCard.classList.add('flipped');
+        }, 80);
+      }
+      canClick = true;
+
+      if (attempts === 0) {
+        gameOver();
+      }
+    }, 1350);
+  }
+
+  if (openedCards.length === 1 && !timer) {
+    timer = setInterval(() => {
+      seconds++;
+      document.getElementById('timer').textContent = seconds;
+    }, 1000);
+  }
+}
+
+    function checkGameWon() {
+      const cards = document.querySelectorAll('.card');
+      const matched = document.querySelectorAll('.matched');
+      if (cards.length === matched.length) {
+        clearInterval(timer);
+		const suerteSound = document.getElementById('suerteSound');
+        suerteSound.play();
+        document.getElementById('game-won-message').style.display = 'block';
+		
+		canClick = false;
+      }
+    }
+
+    function gameOver() {
+      gameOverMessage.style.display = 'block';
+	  const perdidaSound = document.getElementById('perdidaSound');
+      perdidaSound.play();
+      document.querySelectorAll('.card').forEach(card => {
+        card.removeEventListener('click', cardClick);
+      });
+	  clearInterval(timer);
+    }
+
+    function startTimer() {
+      let seconds = 60;
+      timer = setInterval(() => {
+        seconds--;
+        document.getElementById('timer').textContent = seconds;
+        if (seconds === 0) {
+          clearInterval(timer);
+          gameOver();
+        }
+      }, 1000);
+    }
+
+    startButton.addEventListener('click', () => {
+      gameContainer.style.display = 'block';
+      startButton.style.display = 'none';
+      exitButton.style.display = 'block';
+	  const entradaSound = document.getElementById('entradaSound');
+      entradaSound.play();
+      startGame();
+    });
+
+    exitButton.addEventListener('click', () => {
+      gameContainer.style.display = 'none';
+      startButton.style.display = 'block';
+      exitButton.style.display = 'none';
+      clearInterval(timer);
+	  document.body.style.backgroundImage = "url('121.jpg')";
+	  const salidaSound = document.getElementById('salidaSound');
+      salidaSound.play();
+	  
+	  const snowSound = document.getElementById('snowSound');
+      snowSound.pause();
+	  audio.currentTime = 0;
+    });
+	
+  </script>
+ </body>
+ 
+</html>
